@@ -37,19 +37,19 @@ namespace social_navigation_layers
     
     void ProxemicLayer::updateBoundsFromPeople(double* min_x, double* min_y, double* max_x, double* max_y)
     {
-        std::list<people_msgs::Person>::iterator p_it;
+        std::list<people_msgs::PersonStamped>::iterator p_it;
         
         for(p_it = transformed_people_.begin(); p_it != transformed_people_.end(); ++p_it){
-            people_msgs::Person person = *p_it;
+            people_msgs::PersonStamped person = *p_it;
              
-            double mag = sqrt(pow(person.velocity.x,2) + pow(person.velocity.y, 2));
+            double mag = sqrt(pow(person.person.velocity.x,2) + pow(person.person.velocity.y, 2));
             double factor = 1.0 + mag * factor_;
             double point = get_radius(cutoff_, amplitude_, covar_ * factor );
               
-            *min_x = std::min(*min_x, person.position.x - point);
-            *min_y = std::min(*min_y, person.position.y - point);
-            *max_x = std::max(*max_x, person.position.x + point);
-            *max_y = std::max(*max_y, person.position.y + point);
+            *min_x = std::min(*min_x, person.person.position.x - point);
+            *min_y = std::min(*min_y, person.person.position.y - point);
+            *max_x = std::max(*max_x, person.person.position.x + point);
+            *max_y = std::max(*max_y, person.person.position.y + point);
               
         }
     }
@@ -63,12 +63,13 @@ namespace social_navigation_layers
         if( cutoff_ >= amplitude_)
             return;
         
-        std::list<people_msgs::Person>::iterator p_it;
+        std::list<people_msgs::PersonStamped>::iterator p_it;
         costmap_2d::Costmap2D* costmap = layered_costmap_->getCostmap();
         double res = costmap->getResolution();
         
         for(p_it = transformed_people_.begin(); p_it != transformed_people_.end(); ++p_it){
-            people_msgs::Person person = *p_it;
+            people_msgs::PersonStamped person_s = *p_it;
+            people_msgs::Person person = person_s.person;
             double angle = atan2(person.velocity.y, person.velocity.x);
             double mag = sqrt(pow(person.velocity.x,2) + pow(person.velocity.y, 2));
             double factor = 1.0 + mag * factor_;

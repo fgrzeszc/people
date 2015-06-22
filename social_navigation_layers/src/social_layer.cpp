@@ -22,16 +22,33 @@ namespace social_navigation_layers
         people_list_ = people;
     }
 
+    void SocialLayer::clearTransformedPeople()
+    {
+        std::list<people_msgs::PersonStamped>::iterator p_it;
+
+        for(p_it = transformed_people_.begin(); p_it != transformed_people_.end(); ++p_it){
+            people_msgs::PersonStamped person = *p_it;
+
+            ros::Duration absence = ros::Time::now() - person.header.stamp;
+
+            if(absence > people_keep_time_){
+                transformed_people_.erase(p_it);
+
+            }
+
+        }
+    }
+
 
     void SocialLayer::updateBounds(double origin_x, double origin_y, double origin_z, double* min_x, double* min_y, double* max_x, double* max_y){
         boost::recursive_mutex::scoped_lock lock(lock_);
         
         std::string global_frame = layered_costmap_->getGlobalFrameID();
-        transformed_people_.clear();
-        
+        //transformed_people_.clear();
+        clearTransformedPeople();
         for(unsigned int i=0; i<people_list_.people.size(); i++){
             people_msgs::Person& person = people_list_.people[i];
-            people_msgs::Person tpt;
+            people_msgs::PersonStamped tpt;
             geometry_msgs::PointStamped pt, opt;
             
             try{
@@ -40,18 +57,19 @@ namespace social_navigation_layers
               pt.point.z = person.position.z;
               pt.header.frame_id = people_list_.header.frame_id;
               tf_.transformPoint(global_frame, pt, opt);
-              tpt.position.x = opt.point.x;
-              tpt.position.y = opt.point.y;
-              tpt.position.z = opt.point.z;
+              tpt.person.position.x = opt.point.x;
+              tpt.person.position.y = opt.point.y;
+              tpt.person.position.z = opt.point.z;
 
               pt.point.x += person.velocity.x;
               pt.point.y += person.velocity.y;
               pt.point.z += person.velocity.z;
               tf_.transformPoint(global_frame, pt, opt);
               
-              tpt.velocity.x = tpt.position.x - opt.point.x;
-              tpt.velocity.y = tpt.position.y - opt.point.y;
-              tpt.velocity.z = tpt.position.z - opt.point.z;
+              tpt.person.velocity.x = tpt.person.position.x - opt.point.x;
+              tpt.person.velocity.y = tpt.person.position.y - opt.point.y;
+              tpt.person.velocity.z = tpt.person.position.z - opt.point.z;
+              tpt.header.stamp = pt.header.stamp;
               
               transformed_people_.push_back(tpt);
               
