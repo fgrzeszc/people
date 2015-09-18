@@ -19,23 +19,22 @@ namespace social_navigation_layers
         transformed_people_.clear();
         
         for(unsigned int i=0; i<people_list_.people.size(); i++){
-            people_msgs::Person& person = people_list_.people[i];
-            people_msgs::PersonStamped tpt;
+            people_msgs::PersonStamped& tpt = people_list_.people[i];
             geometry_msgs::PointStamped pt, opt;
             
             try{
-              pt.point.x = person.position.x;
-              pt.point.y = person.position.y;
-              pt.point.z = person.position.z;
+              pt.point.x = tpt.person.position.x;
+              pt.point.y = tpt.person.position.y;
+              pt.point.z = tpt.person.position.z;
               pt.header.frame_id = people_list_.header.frame_id;
               tf_.transformPoint(global_frame, pt, opt);
               tpt.person.position.x = opt.point.x;
               tpt.person.position.y = opt.point.y;
               tpt.person.position.z = opt.point.z;
 
-              pt.point.x += person.velocity.x;
-              pt.point.y += person.velocity.y;
-              pt.point.z += person.velocity.z;
+              pt.point.x += tpt.person.velocity.x;
+              pt.point.y += tpt.person.velocity.y;
+              pt.point.z += tpt.person.velocity.z;
               tf_.transformPoint(global_frame, pt, opt);
               
               tpt.person.velocity.x = tpt.person.position.x - opt.point.x;
@@ -44,7 +43,7 @@ namespace social_navigation_layers
               
               transformed_people_.push_back(tpt);
               
-              double mag = sqrt(pow(tpt.person.velocity.x,2) + pow(person.velocity.y, 2));
+              double mag = sqrt(pow(tpt.person.velocity.x,2) + pow(tpt.person.velocity.y, 2));
               double factor = 1.0 + mag * factor_;
               double point = get_radius(cutoff_, amplitude_, covar_ * factor );
               

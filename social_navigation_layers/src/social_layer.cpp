@@ -25,16 +25,17 @@ namespace social_navigation_layers
     void SocialLayer::clearTransformedPeople()
     {
         std::list<people_msgs::PersonStamped>::iterator p_it;
+	p_it = transformed_people_.begin();
+	while(p_it != transformed_people_.end()){
 
-        for(p_it = transformed_people_.begin(); p_it != transformed_people_.end(); ++p_it){
-            people_msgs::PersonStamped person = *p_it;
-
-            ros::Duration absence = ros::Time::now() - person.header.stamp;
+            ros::Duration absence = ros::Time::now() - (*p_it).header.stamp;
 
             if(absence > people_keep_time_){
-                transformed_people_.erase(p_it);
+                p_it = transformed_people_.erase(p_it);
 
             }
+	    else
+		++p_it;
 
         }
     }
@@ -45,25 +46,26 @@ namespace social_navigation_layers
         
         std::string global_frame = layered_costmap_->getGlobalFrameID();
         //transformed_people_.clear();
-        clearTransformedPeople();
+	if(!transformed_people_.empty())
+        	clearTransformedPeople();
         for(unsigned int i=0; i<people_list_.people.size(); i++){
-            people_msgs::Person& person = people_list_.people[i];
-            people_msgs::PersonStamped tpt;
+            //people_msgs::Person& person = people_list_.people[i];
+            people_msgs::PersonStamped& tpt = people_list_.people[i];
             geometry_msgs::PointStamped pt, opt;
             
             try{
-              pt.point.x = person.position.x;
-              pt.point.y = person.position.y;
-              pt.point.z = person.position.z;
+              pt.point.x = tpt.person.position.x;
+              pt.point.y = tpt.person.position.y;
+              pt.point.z = tpt.person.position.z;
               pt.header.frame_id = people_list_.header.frame_id;
               tf_.transformPoint(global_frame, pt, opt);
               tpt.person.position.x = opt.point.x;
               tpt.person.position.y = opt.point.y;
               tpt.person.position.z = opt.point.z;
 
-              pt.point.x += person.velocity.x;
-              pt.point.y += person.velocity.y;
-              pt.point.z += person.velocity.z;
+              pt.point.x += tpt.person.velocity.x;
+              pt.point.y += tpt.person.velocity.y;
+              pt.point.z += tpt.person.velocity.z;
               tf_.transformPoint(global_frame, pt, opt);
               
               tpt.person.velocity.x = tpt.person.position.x - opt.point.x;

@@ -4,7 +4,7 @@ import roslib; roslib.load_manifest('people_velocity_tracker')
 import rospy, rosbag
 from geometry_msgs.msg import Point, Vector3
 import math
-from people_msgs.msg import PositionMeasurementArray, Person, People
+from people_msgs.msg import PositionMeasurementArray, Person, People, PersonStamped
 from easy_markers.generator import *
 from kalman_filter import Kalman
 
@@ -75,11 +75,12 @@ class PersonEstimate:
         pub.publish(m)
 
     def get_person(self):
-        p = Person()
-        p.name = self.id()
-        p.position = self.pos.pos
-        p.velocity = self.velocity()
-        p.reliability = self.reliability
+        p = PersonStamped()
+	p.header.stamp = rospy.Time.now()
+        p.person.name = self.id()
+        p.person.position = self.pos.pos
+        p.person.velocity = self.velocity()
+        p.person.reliability = self.reliability
         return self.pos.header.frame_id, p
 
 class VelocityTracker:

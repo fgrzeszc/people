@@ -4,6 +4,7 @@
 #include <costmap_2d/layer.h>
 #include <costmap_2d/layered_costmap.h>
 #include <people_msgs/People.h>
+#include <people_msgs/PersonStamped.h>
 #include <boost/thread.hpp>
 
 namespace social_navigation_layers
@@ -23,9 +24,10 @@ namespace social_navigation_layers
 
     protected:
       void peopleCallback(const people_msgs::People& people);
+      void clearTransformedPeople();
       ros::Subscriber people_sub_;
       people_msgs::People people_list_;
-      std::list<people_msgs::Person> transformed_people_;
+      std::list<people_msgs::PersonStamped> transformed_people_;
       ros::Duration people_keep_time_;
       boost::recursive_mutex lock_;
       tf::TransformListener tf_;

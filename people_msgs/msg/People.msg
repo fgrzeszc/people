@@ -1,2 +1,2 @@
 Header header
-people_msgs/Person[] people
+people_msgs/PersonStamped[] people
